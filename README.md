@@ -5,6 +5,14 @@
 要分析
 
 ---
+
+## 参考にできそうな前処理リスト
+* CNNで使われる前処理
+http://iwiwi.hatenadiary.jp/entry/2016/12/31/162059
+
+* numpyでのData augment
+https://www.kumilog.net/entry/numpy-data-augmentation#Random-Crop
+---
 reference:
 transformations.py
 run.py
