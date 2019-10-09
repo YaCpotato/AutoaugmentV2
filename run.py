@@ -9,6 +9,8 @@ from transformations import get_transformations
 import PIL.Image
 import numpy as np
 import time
+from keras.models import Sequential
+import wide_resnet
 
 # datasets in the AutoAugment paper:
 # CIFAR-10, CIFAR-100, SVHN, and ImageNet
@@ -29,7 +31,7 @@ def get_dataset(dataset, reduced):
     yts = utils.to_categorical(yts)
     return (Xtr, ytr), (Xts, yts)
 
-(Xtr, ytr), (Xts, yts) = get_dataset('cifar10', True)
+(Xtr, ytr), (Xts, yts) = get_dataset('cifar10', False)
 transformations = get_transformations(Xtr)
 
 # Experiment parameters
@@ -45,15 +47,17 @@ OP_MAGNITUDES = 10
 
 CHILD_BATCH_SIZE = 128
 CHILD_BATCHES = len(Xtr) // CHILD_BATCH_SIZE
-CHILD_EPOCHS = 120
-CONTROLLER_EPOCHS = 500 # 15000 or 20000
+CHILD_EPOCHS = 10
+CONTROLLER_EPOCHS = 5 # 15000 or 20000
 
 class Operation:
     def __init__(self, types_softmax, probs_softmax, magnitudes_softmax, argmax=False):
         # Ekin Dogus says he sampled the softmaxes, and has not used argmax
         # We might still want to use argmax=True for the last predictions, to ensure
         # the best solutions are chosen and make it deterministic.
-        if argmax:
+
+        #types_softmax, probs_softmax, magnitudes_softmaxを渡せていない疑惑
+        if argmax:#ここの動作を正常になるよう改造する
             self.type = types_softmax.argmax()
             t = transformations[self.type]
             self.prob = probs_softmax.argmax() / (OP_PROBS-1)
@@ -176,25 +180,21 @@ class Child:
         self.model.compile(optimizer, 'categorical_crossentropy', ['accuracy'])
 
     def create_model(self, input_shape):
-        x = input_layer = layers.Input(shape=input_shape)
-        x = layers.Conv2D(32, 3, activation='relu')(x)
-        x = layers.Conv2D(64, 3, activation='relu')(x)
-        x = layers.MaxPooling2D(2)(x)
-        x = layers.Dropout(0.25)(x)
-        x = layers.Flatten()(x)
-        x = layers.Dense(128, activation='relu')(x)
-        x = layers.Dropout(0.5)(x)
-        x = layers.Dense(10, activation='softmax')(x)
-        return models.Model(input_layer, x)
+        model = Sequential()
+        model.add(wide_resnet.WideResidualNetwork(depth=28, width=8, dropout_rate=0.1,
+                        include_top=True, weights=None,input_shape=None,
+                        classes=10, activation='softmax'))
+        model.summary()
+        return model
 
     def fit(self, subpolicies, X, y):
         gen = autoaugment(subpolicies, X, y)
         self.model.fit_generator(
-            gen, CHILD_BATCHES, CHILD_EPOCHS, verbose=0, use_multiprocessing=True)
+            gen, CHILD_BATCHES, CHILD_EPOCHS, verbose=1, use_multiprocessing=True)
         return self
 
     def evaluate(self, X, y):
-        return self.model.evaluate(X, y, verbose=0)[1]
+        return self.model.evaluate(X, y, verbose=1)[1]
 
 mem_softmaxes = []
 mem_accuracies = []

@@ -1,15 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Wed Oct  9 04:54:44 2019
-
-@author: rilak
-"""
-
-# -*- coding: utf-8 -*-
-"""Wide Residual Network models for Keras.
-# Reference
-- [Wide Residual Networks](https://arxiv.org/abs/1605.07146)
-"""
 from __future__ import print_function
 from __future__ import absolute_import
 from __future__ import division
