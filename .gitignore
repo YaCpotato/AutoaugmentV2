@@ -1,3 +1,5 @@
-autobin/
+autoaugment/
 .ipynb_checkpoints/
 __pycache__/
+*.sh
+*.sh.*
