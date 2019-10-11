@@ -25,13 +25,13 @@ Yts = np_utils.to_categorical(Yts, 10)
 
 def model():
 	model=Sequential()
-	model.add(wide_resnet.WideResidualNetwork(depth=28, width=8, dropout_rate=0.1,include_top=True, weights=None,input_shape=None,classes=10, activation='softmax'))
+	model.add(wide_resnet.WideResidualNetwork(depth=40, width=2, dropout_rate=0.1,include_top=True, weights=None,input_shape=None,classes=10, activation='softmax'))
 	return model
 
 model = model()
 model.compile(optimizers.SGD(decay=1e-4), 'categorical_crossentropy', ['accuracy'])
 start = time.time()
-result = model.fit(Xtr,Ytr,batch_size=128,epochs=20,verbose=2,validation_split=0.1)
+result = model.fit(Xtr,Ytr,batch_size=128,epochs=120,verbose=2,validation_split=0.1)
 end = time.time() - start
 print(end)
 print('--------')
