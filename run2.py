@@ -11,6 +11,9 @@ import time
 from keras.models import Sequential
 import wide_resnet
 from keras.utils import np_utils
+from tensorflow.python.client import device_lib
+
+print(device_lib.list_local_devices())
 
 (Xtr, Ytr), (Xts, Yts) = datasets.cifar10.load_data()
 Xtr = Xtr.astype('float32')
@@ -27,5 +30,13 @@ def model():
 
 model = model()
 model.compile(optimizers.SGD(decay=1e-4), 'categorical_crossentropy', ['accuracy'])
-model.fit(Xtr,Ytr,batch_size=128,epochs=1,validation_split=0.1)
-model.evaluate(Xts,Yts)
+start = time.time()
+result = model.fit(Xtr,Ytr,batch_size=128,epochs=20,verbose=2,validation_split=0.1)
+end = time.time() - start
+print(end)
+print('--------')
+print(result.history)
+score = model.evaluate(Xts,Yts,verbose=2)
+print('===Final Test Score===')
+print('Test loss:', score[0])
+print('Test accuracy:', score[1])
