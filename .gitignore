@@ -3,3 +3,4 @@ autoaugment/
 __pycache__/
 *.sh
 *.sh.*
+intel-image-classification/
